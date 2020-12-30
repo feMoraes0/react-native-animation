@@ -1,5 +1,6 @@
 import React, {useRef} from 'react';
 import {
+  findNodeHandle,
   View,
   StyleSheet,
   Text,
@@ -26,32 +27,77 @@ const data = Object.keys(images).map((i) => ({
   key: i,
   title: i,
   image: images[i],
+  ref: React.createRef(),
 }));
-const {width, height} = Dimensions.get('screen');
+const {width: screenWidth, height: screenHeight} = Dimensions.get('screen');
 
-const Indicator = () => {
-  return <View style={styles.indicator} />;
+const Indicator = ({measures, scrollX}) => {
+  const inputRange = data.map((_, i) => i * screenWidth);
+  const indicatorWidth = scrollX.interpolate({
+    inputRange,
+    outputRange: measures.map((measure) => measure.width),
+  });
+  const translateX = scrollX.interpolate({
+    inputRange,
+    outputRange: measures.map((measure) => measure.x),
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.indicator,
+        {
+          width: indicatorWidth,
+          transform: [
+            {
+              translateX: translateX,
+            },
+          ],
+        },
+      ]}
+    />
+  );
 };
 
-const Tab = ({item}) => {
+const Tab = React.forwardRef(({item}, ref) => {
   return (
-    <View>
+    <View ref={ref}>
       <Text style={[styles.tabItem, {fontSize: 84 / data.length}]}>
         {item.title}
       </Text>
     </View>
   );
-};
+});
 
 const Tabs = ({scrollX}) => {
+  const [measures, setMeasures] = React.useState([]);
+  const containerRef = React.useRef();
+  React.useEffect(() => {
+    const localMeasures = [];
+    data.forEach((item) => {
+      item.ref.current.measureLayout(
+        containerRef.current,
+        (x, y, width, height) => {
+          localMeasures.push({x, y, width, height});
+
+          if (localMeasures.length === data.length) {
+            setMeasures(localMeasures);
+          }
+        },
+      );
+    });
+  }, []);
+
   return (
-    <View style={styles.tabs}>
+    <View style={styles.tabs} ref={containerRef}>
       <View style={styles.tabsBox}>
         {data.map((item) => {
-          return <Tab key={item.key} item={item} />;
+          return <Tab key={item.key} item={item} ref={item.ref} />;
         })}
       </View>
-      <Indicator />
+      {measures.length > 0 && (
+        <Indicator measures={measures} scrollX={scrollX} />
+      )}
     </View>
   );
 };
@@ -94,23 +140,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imageWrapper: {
-    width: width,
-    height: height,
+    width: screenWidth,
+    height: screenHeight,
   },
   image: {
     flex: 1,
     resizeMode: 'cover',
   },
   imageMask: {
-    width: width,
-    height: height,
+    width: screenWidth,
+    height: screenHeight,
     position: 'absolute',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   tabs: {
     position: 'absolute',
     top: 100,
-    width: width,
+    width: screenWidth,
   },
   tabsBox: {
     flex: 1,
@@ -125,9 +171,10 @@ const styles = StyleSheet.create({
   indicator: {
     position: 'absolute',
     height: 4,
-    width: 100,
+    width: 0,
     backgroundColor: 'white',
     bottom: -10,
+    left: 0,
   },
 });
 
