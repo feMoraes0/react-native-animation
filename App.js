@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React from 'react';
 import {
   findNodeHandle,
   View,
@@ -9,6 +9,7 @@ import {
   FlatList,
   Animated,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 
 const images = {
@@ -59,17 +60,19 @@ const Indicator = ({measures, scrollX}) => {
   );
 };
 
-const Tab = React.forwardRef(({item}, ref) => {
+const Tab = React.forwardRef(({item, onItemPress}, ref) => {
   return (
-    <View ref={ref}>
-      <Text style={[styles.tabItem, {fontSize: 84 / data.length}]}>
-        {item.title}
-      </Text>
-    </View>
+    <TouchableOpacity onPress={onItemPress}>
+      <View ref={ref}>
+        <Text style={[styles.tabItem, {fontSize: 84 / data.length}]}>
+          {item.title}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 });
 
-const Tabs = ({scrollX}) => {
+const Tabs = ({scrollX, onItemPress}) => {
   const [measures, setMeasures] = React.useState([]);
   const containerRef = React.useRef();
   React.useEffect(() => {
@@ -91,8 +94,15 @@ const Tabs = ({scrollX}) => {
   return (
     <View style={styles.tabs} ref={containerRef}>
       <View style={styles.tabsBox}>
-        {data.map((item) => {
-          return <Tab key={item.key} item={item} ref={item.ref} />;
+        {data.map((item, index) => {
+          return (
+            <Tab
+              key={item.key}
+              item={item}
+              ref={item.ref}
+              onItemPress={() => onItemPress(index)}
+            />
+          );
         })}
       </View>
       {measures.length > 0 && (
@@ -103,12 +113,20 @@ const Tabs = ({scrollX}) => {
 };
 
 const App = () => {
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollX = React.useRef(new Animated.Value(0)).current;
+  const flatListRef = React.useRef();
+  const onItemPress = React.useCallback((itemIndex) => {
+    flatListRef?.current?.scrollToOffset({
+      offset: itemIndex * screenWidth,
+    });
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
         <Animated.FlatList
+          ref={flatListRef}
           data={data}
           keyExtractor={(item) => item.key}
           horizontal
@@ -126,7 +144,7 @@ const App = () => {
             </View>
           )}
         />
-        <Tabs scrollX={scrollX} />
+        <Tabs scrollX={scrollX} onItemPress={onItemPress} />
       </View>
     </>
   );
