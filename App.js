@@ -137,9 +137,14 @@ const App = () => {
             {useNativeDriver: false}, // native driver won't works with width resize
           )}
           bounces={false}
-          renderItem={(item) => (
+          renderItem={({item}) => (
             <View style={styles.imageWrapper}>
-              <Image source={{uri: item.image}} style={styles.image} />
+              <Image
+                source={{
+                  uri: item.image,
+                }}
+                style={styles.image}
+              />
               <View style={styles.imageMask} />
             </View>
           )}
