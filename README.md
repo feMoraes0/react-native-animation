@@ -8,7 +8,11 @@ Tutorial Channels:
  - [William Candillon's channel](https://www.youtube.com/user/wcandill)
 
 ## :iphone: Prints
-> typing...
+ - [Project 01 Youtube Video](https://www.youtube.com/watch?v=ZiSN9uik6OY)
+<p align="center">
+  <img width="200" src="prints/project-01/printscreen.png" />
+  <img width="220" src="prints/project-01/demo.gif">
+</p>
 
 ## :book: How to use
 
