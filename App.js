@@ -7,8 +7,8 @@ import {
   View,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 const {width, height} = Dimensions.get('screen');
 
 // https://www.flaticon.com/packs/retro-wave
@@ -46,23 +46,47 @@ const DATA = [
   },
 ];
 
+const Indicator = ({scrollX}) => {
+  return (
+    <View style={styles.indicatorBox}>
+      {DATA.map((_, i) => {
+        return <View key={`indicator-${i}`} style={styles.indicator} />;
+      })}
+    </View>
+  );
+};
+
 const App = () => {
+  const scrollX = React.useRef(new Animated.Value(0)).current;
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Text style={{fontSize: 42}}>❤️</Text>
-      <Text
-        style={{
-          fontFamily: 'Menlo',
-          marginTop: 10,
-          fontWeight: '800',
-          fontSize: 16,
-        }}>
-        Expo
-      </Text>
-      <Text style={{fontFamily: 'Menlo', fontStyle: 'italic', fontSize: 12}}>
-        (expo.io)
-      </Text>
+      <Animated.FlatList
+        data={DATA}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        scrollEventThrottle={32}
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {x: scrollX}}}],
+          {useNativeDriver: false},
+        )}
+        keyExtractor={(item) => item.key}
+        renderItem={({item}) => (
+          <View style={styles.slide}>
+            <View style={styles.slideImageBox}>
+              <Image source={{uri: item.image}} style={styles.slideImage} />
+            </View>
+            <View>
+              <Text style={styles.slideTextTitle}>{item.title}</Text>
+              <Text style={styles.slideTextDescription}>
+                {item.description}
+              </Text>
+            </View>
+          </View>
+        )}
+      />
+      <Indicator />
     </View>
   );
 };
@@ -73,6 +97,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  slide: {
+    width: width,
+    alignItems: 'center',
+    padding: 20.0,
+  },
+  slideImageBox: {
+    flex: 0.7,
+    justifyContent: 'center',
+  },
+  slideImage: {
+    width: width / 2,
+    height: width / 2,
+    resizeMode: 'contain',
+  },
+  slideTextTitle: {
+    fontWeight: '800',
+    fontSize: 24.0,
+    marginBottom: 10.0,
+  },
+  slideTextDescription: {
+    fontWeight: '300',
+  },
+  // Indicator Component
+  indicatorBox: {
+    position: 'absolute',
+    bottom: 100.0,
+    flexDirection: 'row',
+  },
+  indicator: {
+    height: 10.0,
+    width: 10.0,
+    borderRadius: 5,
+    backgroundColor: '#333',
+    margin: 10.0,
   },
 });
 
